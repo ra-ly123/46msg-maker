@@ -1,0 +1,1110 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>坂道トークメーカー</title>
+  <style>
+    :root { --bg:#0b0c10; --panel:#12141b; --muted:#9aa3b2; --text:#e9eef7; --accent:#7aa2ff; --line:#23283a; }
+    *{ box-sizing:border-box; }
+    body{ margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans JP", sans-serif; background:var(--bg); color:var(--text); }
+    header{ padding:18px 16px; border-bottom:1px solid var(--line); position:sticky; top:0; background:rgba(11,12,16,.92); backdrop-filter: blur(10px); z-index:10; }
+    header h1{ margin:0; font-size:16px; font-weight:700; letter-spacing:.02em; }
+    header p{ margin:6px 0 0; color:var(--muted); font-size:12px; }
+    main{ display:grid; grid-template-columns: 380px 1fr; align-items: start; gap:14px; padding:14px; }
+    @media (max-width: 980px){ main{ grid-template-columns:1fr; } }
+    .card{ background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:14px; }
+    .row{ display:grid; grid-template-columns: 1fr 1fr; gap:10px; }
+    .row3{ display:grid; grid-template-columns: 1fr 1fr 1fr; gap:10px; }
+    label{ display:block; font-size:12px; color:var(--muted); margin:10px 0 6px; }
+    input, select, textarea{
+      width:100%; padding:10px 10px; border-radius:10px; border:1px solid #2a3046;
+      background:#0f1118; color:var(--text); outline:none;
+    }
+    textarea{ min-height:90px; resize:vertical; }
+    .btns{ display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
+    button{
+      border:1px solid #2a3046; background:#0f1118; color:var(--text);
+      padding:10px 12px; border-radius:10px; cursor:pointer; font-weight:700;
+    }
+    button.primary{ background:var(--accent); border-color:transparent; color:#0b0c10; }
+    button.danger{ background:#ff5c73; border-color:transparent; color:#0b0c10; }
+    button:disabled{ opacity:.5; cursor:not-allowed; }
+    .hint{ font-size:12px; color:var(--muted); margin-top:10px; line-height:1.5; }
+    .list{ display:flex; flex-direction:column; gap:10px; }
+    .item{
+      border:1px solid #2a3046; border-radius:12px; padding:10px; background:#0f1118;
+      display:grid; grid-template-columns: 1fr auto; gap:10px; align-items:start;
+    }
+    .item pre{
+      margin:0; white-space:pre-wrap; word-break:break-word; color:#d9e2f2; font-size:12px; line-height:1.4;
+      max-height:120px; overflow:auto; padding-right:6px;
+    }
+    .chip{ display:inline-block; padding:2px 8px; border:1px solid #2a3046; border-radius:999px; color:var(--muted); font-size:11px; margin-right:6px; }
+    .previewBox{
+      border:1px solid #2a3046; border-radius:14px; overflow:hidden; background:#0f1118;
+      min-height:420px;
+    }
+    .previewTop{ display:flex; gap:8px; align-items:center; padding:10px; border-bottom:1px solid #2a3046; }
+    .previewTop .dot{ width:10px; height:10px; border-radius:999px; background:#2a3046; }
+    iframe{ width:100%; height:100vh; border:0; background:white; }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Noto Sans Mono", monospace; }
+	.option-item{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  white-space: nowrap;
+}
+.previewFrame{
+  width: 100%;
+  max-width: 390px;
+  aspect-ratio: 9 / 16;
+  margin: 0 auto;
+  background: #000;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0,0,0,.4);
+}
+
+
+.previewFrame iframe{
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: white;
+}
+.card{
+  min-width: 0;
+}
+
+details.item {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-auto-flow: row;
+}
+
+details.item > summary {
+  list-style: none;
+  cursor: pointer;
+  display: block;
+}
+
+details.item > summary::-webkit-details-marker {
+  display: none;
+}
+
+details.item[open] > .editor {
+  margin-top: 10px;
+}
+
+
+
+
+
+
+
+
+  </style>
+</head>
+
+<body>
+<header>
+  <h1>坂道トークメーカー（乃木坂46 / 櫻坂46 / 日向坂46）</h1>
+  <p>好きな画像や動画で坂道メッセージアプリのトーク画面を再現します</p>
+</header>
+
+<main>
+	
+  <section class="card">
+    <div class="row">
+      <div>
+        <label>テンプレート</label>
+        <select id="templateSelect">
+          <option value="template/nogizaka.html">乃木坂46（nogizaka46）</option>
+          <option value="template/sakurazaka.html">櫻坂46（sakurazaka46）</option>
+          <option value="template/hinatazaka.html">日向坂46（hinatazaka46）</option>
+        </select>
+      </div>
+      <div>
+        <label>吹き出しタイプ</label>
+        <select id="bubbleType">
+          <option value="1">タイプ1（テキスト）</option>
+          <option value="2">タイプ2（画像+テキスト）</option>
+          <option value="3">タイプ3（画像のみ）</option>
+          <option value="4v">タイプ4-1（縦動画）</option>
+          <option value="4h">タイプ4-2（横動画）</option>
+          <option value="5">タイプ5（音声）</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>ルーム名（ROOM_NAME）</label>
+        <input id="roomName" placeholder="例) ケルベロスと飼い主" />
+      </div>
+      <div>
+        <label>メンバー名（MEMBER_NAME）</label>
+        <input id="memberName" placeholder="例）遠藤 さくら" />
+      </div>
+	  </div>
+	  <div class="row">
+      <div>
+        <label>日付（MONTH/DAY）</label>
+        <input id="md" placeholder="例）2/22" />
+      </div>
+      <div>
+        <label>時刻（HOUR:MINUTE）</label>
+        <input id="hm" placeholder="例）21:05" />
+      </div>
+	  </div>
+      <div>
+        <label>アイコンパス（ICON_PATH）</label>
+        <input id="iconPath" placeholder="例）icon.jpg / https://..." />
+      </div>
+
+    <div id="mediaRow" style="display:none;">
+  <label id="mediaLabel">メディアパス（MEDIA_PATH）</label>
+  <input id="mediaPath"
+         placeholder="例）pic.jpg / https://...movie.mp4 / voice.mp3" />
+</div>
+
+
+    <div id="textRow">
+      <label>本文（CHAT_TEXT）</label>
+      <textarea id="chatText" placeholder="%%%を入れると名前に変換されます"></textarea>
+    </div>
+
+    <div class="btns">
+      <button class="primary" id="addBtn">＋ 吹き出しを追加</button>
+      <button id="clearBtn" class="danger">全削除</button>
+      <button id="downloadBtn">ダウンロード</button>
+      <button id="previewBtn">プレビュー更新</button>
+    </div>
+
+    <hr style="border:0;border-top:1px solid #23283a; margin:14px 0;">
+
+<label style="display:block; font-size:12px; color:#9aa3b2; margin-bottom:6px;">
+  装飾オプション
+</label>
+
+  <label class="option-item">
+    <input type="checkbox" id="optSNOW">
+    ❄ 雪+黒背景
+  </label>
+  <label class="option-item">
+    <input type="checkbox" id="optSNOWMAN">
+    ⛄ 雪だるま
+  </label>
+  <label class="option-item">
+    <input type="checkbox" id="optSANTA">
+    🎅 サンタ帽
+  </label>
+  <label class="option-item">
+    <input type="checkbox" id="optTREE">
+    🎄 クリスマスツリー
+  </label>
+  <label class="option-item">
+    <input type="checkbox" id="optTREEW">
+    🎄❄ ホワイトクリスマスツリー
+  </label>
+    <hr style="border:0;border-top:1px solid var(--line); margin:14px 0;">
+    <div class="hint">
+	  <div>・プレビューはレイアウトがズレる可能性がありますが保存するhtmlでは正しく表示される(ハズな)ので、あくまで確認用に活用ください</div>
+	  <div>・日時は分以外は一桁でも0埋めしない方が公式アプリっぽくなります(例)1/1 1:01</div>
+      <div>・画像動画パス等は相対パスでもOKですが、保存したhtmlと同じディレクトリに入れてファイル名だけ入力するのが楽です</div>
+      <div>・オンライン上のURL(ブログ画像等)を指定するとhtmlだけで閲覧できますが極端に数が増えると重くなります</div>
+      <div>・テキストに%%%を入れると名前呼びを再現できます(名前はヘッダー右端のメニューボタンから変更できます)</div>
+      <div>・一応はPCなどの横画面でも破綻なく見れると思いますがあくまでスマホ基準で作っているのであしからず</div>
+      <div>・装飾オプションは競合するものがあります</div>
+    </div>
+
+    <hr style="border:0;border-top:1px solid var(--line); margin:14px 0;">
+
+    <label>追加済み吹き出し（展開して編集可能）</label>
+    <div id="list" class="list"></div>
+  </section>
+
+  <section class="card">
+    <div class="previewBox">
+      <div class="previewTop">
+        <div style="margin-left:8px;color:var(--muted);font-size:12px;">プレビュー</div>
+      </div>
+      <div class="previewFrame">
+  <iframe id="preview"></iframe>
+</div>
+    </div>
+  </section>
+</main>
+
+<script>
+  const MARKER = "<!-- チャットエリア -->";
+
+　const BUBBLE_TYPE_ORDER = ["1", "2", "3", "4v", "4h", "5"];
+	
+  const BUBBLES = {
+    "1": `
+<!-- 吹き出しタイプ 1 -->
+<div class="flex items-start">
+  <img src="ICON_PATH" alt="プロフィール"
+       class="w-[10.7dvw] h-[10.7dvw] rounded-full object-cover select-none pointer-events-none min-w-[10.7dvw] min-h-[10.7dvw] flex-shrink-0"
+       oncontextmenu="return false" draggable="false">
+  <div class="flex flex-col mt-0">
+    <div class="flex items-center justify-between mb-[1.5dvw] ml-[4.25926dvw] w-[76.57407dvw]">
+      <div class="flex items-center space-x-[4.3dvw]">
+        <span class="text-[#363636] font-meta text-[2.97dvw] -mt-[0.2dvw]">MEMBER_NAME</span>
+        <span class="text-[#363636] font-meta text-[2.97dvw] -mt-[0.2dvw]">MONTH/DAY &nbsp;HOUR:MINUTE</span>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"
+        class="w-[3.5dvw] h-[3.5dvw] select-none pointer-events-none mr-[2.31481dvw]" aria-label="メニュー" role="img">
+        <rect fill="none" width="32" height="32" />
+        <g transform="translate(4)">
+          <circle fill="#9F9F9F" cx="0.6" cy="16.3" r="3.4" />
+          <circle fill="#9F9F9F" cx="12" cy="16.3" r="3.4" />
+          <circle fill="#9F9F9F" cx="23.4" cy="16.3" r="3.4" />
+        </g>
+      </svg>
+    </div>
+    <div class="relative bg-gray-100 rounded-[1dvw] pt-[3.00926dvw] pb-[3.00926dvw] px-[4.25926dvw] w-[76.57407dvw] bubble mt-[0.28dvw]">
+      <p class='mt-0 font-text text-left whitespace-pre-line text-[#363636] text-[3dvw]'>CHAT_TEXT</p>
+    </div>
+  </div>
+</div>
+`,
+    "2": `
+<!-- 吹き出しタイプ 2 -->
+<div class="flex items-start">
+  <img src="ICON_PATH" alt="プロフィール"
+       class="w-[10.7dvw] h-[10.7dvw] rounded-full object-cover select-none pointer-events-none min-w-[10.7dvw] min-h-[10.7dvw] flex-shrink-0"
+       oncontextmenu="return false" draggable="false">
+  <div class="flex flex-col mt-0">
+    <div class="flex items-center justify-between mb-[1.5dvw] ml-[4.25926dvw] w-[76.57407dvw]">
+      <div class="flex items-center space-x-[4.3dvw]">
+        <span class="text-[#363636] font-meta text-[2.97dvw] -mt-[0.2dvw]">MEMBER_NAME</span>
+        <span class="text-[#363636] font-meta text-[2.97dvw] -mt-[0.2dvw]">MONTH/DAY &nbsp;HOUR:MINUTE</span>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"
+        class="w-[3.5dvw] h-[3.5dvw] select-none pointer-events-none mr-[2.31481dvw]" aria-label="メニュー" role="img">
+        <rect fill="none" width="32" height="32" />
+        <g transform="translate(4)">
+          <circle fill="#9F9F9F" cx="0.6" cy="16.3" r="3.4" />
+          <circle fill="#9F9F9F" cx="12" cy="16.3" r="3.4" />
+          <circle fill="#9F9F9F" cx="23.4" cy="16.3" r="3.4" />
+        </g>
+      </svg>
+    </div>
+    <div class="relative bg-gray-100 rounded-[1dvw] pt-[4.25926dvw] pb-[3.95926dvw] px-[4.25926dvw] w-[76.57407dvw] bubble mt-[0.28dvw]">
+      <img src='IMAGE_PATH' alt='自撮り' class='cursor-pointer rounded-[1dvw] max-w-[68.05555dvw] max-h-[68.05555dvw] m-auto select-none'
+        onclick='openImageModal(this.src)' oncontextmenu='return false' ondragstart='return false' onmousedown='return false' draggable='false'/>
+      <p class='mt-[3.65926dvw] font-text text-left whitespace-pre-line text-[#363636] text-[3dvw]'>CHAT_TEXT</p>
+    </div>
+  </div>
+</div>
+`,
+    "3": `
+<!-- 吹き出しタイプ 3 -->
+<div class="flex items-start">
+  <img src="ICON_PATH" alt="プロフィール"
+       class="w-[10.7dvw] h-[10.7dvw] rounded-full object-cover select-none pointer-events-none min-w-[10.7dvw] min-h-[10.7dvw] flex-shrink-0"
+       oncontextmenu="return false" draggable="false">
+  <div class="flex flex-col mt-0">
+    <div class="flex items-center justify-between mb-[1.5dvw] ml-[4.25926dvw] w-[76.57407dvw]">
+      <div class="flex items-center space-x-[4.3dvw]">
+        <span class="text-[#363636] font-meta text-[2.97dvw] -mt-[0.2dvw]">MEMBER_NAME</span>
+        <span class="text-[#363636] font-meta text-[2.97dvw] -mt-[0.2dvw]">MONTH/DAY &nbsp;HOUR:MINUTE</span>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"
+        class="w-[3.5dvw] h-[3.5dvw] select-none pointer-events-none mr-[2.31481dvw]" aria-label="メニュー" role="img">
+        <rect fill="none" width="32" height="32" />
+        <g transform="translate(4)">
+          <circle fill="#9F9F9F" cx="0.6" cy="16.3" r="3.4" />
+          <circle fill="#9F9F9F" cx="12" cy="16.3" r="3.4" />
+          <circle fill="#9F9F9F" cx="23.4" cy="16.3" r="3.4" />
+        </g>
+      </svg>
+    </div>
+    <div class="relative bg-gray-100 rounded-[1dvw] pt-[4.25926dvw] pb-[4.25926dvw] px-[4.25926dvw] w-[76.57407dvw] bubble mt-[0.28dvw]">
+      <img src='IMAGE_PATH' alt='自撮り' class='cursor-pointer rounded-[1dvw] max-w-[68.05555dvw] max-h-[68.05555dvw] m-auto select-none'
+        onclick='openImageModal(this.src)' oncontextmenu='return false' ondragstart='return false' onmousedown='return false' draggable='false'/>
+    </div>
+  </div>
+</div>
+`,
+    "4v": `
+<!-- 吹き出しタイプ 4-1 縦動画 -->
+<div class="flex items-start">
+  <img src="ICON_PATH" alt="プロフィール"
+       class="w-[10.7dvw] h-[10.7dvw] rounded-full object-cover select-none pointer-events-none min-w-[10.7dvw] min-h-[10.7dvw] flex-shrink-0"
+       oncontextmenu="return false" draggable="false">
+  <div class="flex flex-col mt-0">
+    <div class="flex items-center justify-between mb-[1.5dvw] ml-[4.25926dvw] w-[76.57407dvw]">
+      <div class="flex items-center space-x-[4.3dvw]">
+        <span class="text-[#363636] font-meta text-[2.97dvw] -mt-[0.2dvw]">MEMBER_NAME</span>
+        <span class="text-[#363636] font-meta text-[2.97dvw] -mt-[0.2dvw]">MONTH/DAY &nbsp;HOUR:MINUTE</span>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"
+        class="w-[3.5dvw] h-[3.5dvw] select-none pointer-events-none mr-[2.31481dvw]" aria-label="メニュー" role="img">
+        <rect fill="none" width="32" height="32" />
+        <g transform="translate(4)">
+          <circle fill="#9F9F9F" cx="0.6" cy="16.3" r="3.4" />
+          <circle fill="#9F9F9F" cx="12" cy="16.3" r="3.4" />
+          <circle fill="#9F9F9F" cx="23.4" cy="16.3" r="3.4" />
+        </g>
+      </svg>
+    </div>
+    <div class="relative bg-gray-100 rounded-[1dvw] pt-[4.25926dvw] pb-[4.25926dvw] px-[4.25926dvw] w-[76.57407dvw] bubble mt-[0.28dvw]">
+      <div class='relative max-w-[68.05555dvw] h-[68.05555dvw] m-auto cursor-pointer group' onclick='openVideoModal("VIDEO_PATH")'>
+        <video src="VIDEO_PATH" class='mx-auto h-full object-cover rounded-[1dvw]'
+               oncontextmenu='return false' draggable='false'
+               ondragstart='return false' onmousedown='return false'></video>
+        <div class='absolute inset-0 flex items-center justify-center'>
+          <div class='w-[13.5dvw] h-[13.5dvw] rounded-full bg-black bg-opacity-30 flex items-center justify-center'>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-[4dvw] h-[4dvw] text-white fill-white">
+              <path d="M22.94,12L1.61,24V0L22.94,12z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`,
+    "4h": `
+<!-- 吹き出しタイプ 4-2 横動画 -->
+<div class="flex items-start">
+  <img src="ICON_PATH" alt="プロフィール"
+       class="w-[10.7dvw] h-[10.7dvw] rounded-full object-cover select-none pointer-events-none min-w-[10.7dvw] min-h-[10.7dvw] flex-shrink-0"
+       oncontextmenu="return false" draggable="false">
+  <div class="flex flex-col mt-0">
+    <div class="flex items-center justify-between mb-[1.5dvw] ml-[4.25926dvw] w-[76.57407dvw]">
+      <div class="flex items-center space-x-[4.3dvw]">
+        <span class="text-[#363636] font-meta text-[2.97dvw] -mt-[0.2dvw]">MEMBER_NAME</span>
+        <span class="text-[#363636] font-meta text-[2.97dvw] -mt-[0.2dvw]">MONTH/DAY &nbsp;HOUR:MINUTE</span>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"
+        class="w-[3.5dvw] h-[3.5dvw] select-none pointer-events-none mr-[2.31481dvw]" aria-label="メニュー" role="img">
+        <rect fill="none" width="32" height="32" />
+        <g transform="translate(4)">
+          <circle fill="#9F9F9F" cx="0.6" cy="16.3" r="3.4" />
+          <circle fill="#9F9F9F" cx="12" cy="16.3" r="3.4" />
+          <circle fill="#9F9F9F" cx="23.4" cy="16.3" r="3.4" />
+        </g>
+      </svg>
+    </div>
+    <div class="relative bg-gray-100 rounded-[1dvw] pt-[4.25926dvw] pb-[4.25926dvw] px-[4.25926dvw] w-[76.57407dvw] bubble mt-[0.28dvw]">
+      <div class='relative w-[68.05555dvw] max-h-[68.05555dvw] m-auto cursor-pointer group' onclick='openVideoModal("VIDEO_PATH")'>
+        <video src="VIDEO_PATH" class='my-auto w-full object-cover rounded-[1dvw]'
+               oncontextmenu='return false' draggable='false'
+               ondragstart='return false' onmousedown='return false'></video>
+        <div class='absolute inset-0 flex items-center justify-center'>
+          <div class='w-[13.5dvw] h-[13.5dvw] rounded-full bg-black bg-opacity-30 flex items-center justify-center'>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-[4dvw] h-[4dvw] text-white fill-white">
+              <path d="M22.94,12L1.61,24V0L22.94,12z"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`,
+    "5": `
+<!-- 吹き出しタイプ 5 -->
+<div class="flex items-start">
+  <img src="ICON_PATH" alt="プロフィール"
+       class="w-[10.7dvw] h-[10.7dvw] rounded-full object-cover select-none pointer-events-none min-w-[10.7dvw] min-h-[10.7dvw] flex-shrink-0"
+       oncontextmenu="return false" draggable="false">
+  <div class="flex flex-col mt-0">
+    <div class="flex items-center justify-between mb-[1.5dvw] ml-[4.25926dvw] w-[76.57407dvw]">
+      <div class="flex items-center space-x-[4.3dvw]">
+        <span class="text-[#363636] font-meta text-[2.97dvw] -mt-[0.2dvw]">MEMBER_NAME</span>
+        <span class="text-[#363636] font-meta text-[2.97dvw] -mt-[0.2dvw]">MONTH/DAY &nbsp;HOUR:MINUTE</span>
+      </div>
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"
+        class="w-[3.5dvw] h-[3.5dvw] select-none pointer-events-none mr-[2.31481dvw]" aria-label="メニュー" role="img">
+        <rect fill="none" width="32" height="32" />
+        <g transform="translate(4)">
+          <circle fill="#9F9F9F" cx="0.6" cy="16.3" r="3.4" />
+          <circle fill="#9F9F9F" cx="12" cy="16.3" r="3.4" />
+          <circle fill="#9F9F9F" cx="23.4" cy="16.3" r="3.4" />
+        </g>
+      </svg>
+    </div>
+    <div class="relative bg-gray-100 rounded-[1dvw] pt-[4.25926dvw] pb-[4.25926dvw] px-[4.25926dvw] w-[76.57407dvw] h-[24dvw] bubble mt-[0.28dvw]">
+      <div class='custom-audio-player mt-[2dvw]' data-audio-src='AUDIO_PATH'>
+        <input type='range' value='0' min='0' max='100'
+          class='w-full h-[0.5dvw] appearance-none bg-gray-200 rounded-[1dvw] outline-none custom-seek mt-[0px]' />
+        <div class='flex items-center justify-between mt-[6dvw]'>
+          <div class='flex items-center justify-center h-full'>
+            <svg class='w-[6.5dvw] h-[6.5dvw] text-[#9F9F9F]' xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'>
+              <rect x='4.79' y='4.83' fill='none' width='14.38' height='14.38'/>
+              <rect x='-0.02' y='0.02' fill='none' width='24' height='24'/>
+              <g>
+                <path fill='currentColor' d='M1.94,9.75v4.85c0,0.36,0.3,0.66,0.66,0.66h2.77c0.52,0,1.03,0.17,1.44,0.5l3.75,2.93 c0.37,0.28,0.9,0.02,0.9-0.44V6.1c0-0.46-0.53-0.72-0.9-0.44L6.82,8.59C6.4,8.91,5.9,9.09,5.37,9.09H2.6 C2.24,9.09,1.94,9.39,1.94,9.75z'/>
+                <path fill='currentColor' d='M17.62,21.24c0.09,0.15,0.23,0.25,0.4,0.28c0.17,0.04,0.34,0,0.48-0.09c1.23-0.84,2.27-2.13,3.01-3.72 c0.77-1.65,1.16-3.56,1.16-5.52c0-1.98-0.41-3.89-1.18-5.54c-0.74-1.6-1.8-2.89-3.04-3.72c-0.14-0.09-0.31-0.13-0.48-0.09 c-0.15,0.02-0.29,0.12-0.38,0.27l-0.35,0.55c-0.18,0.29-0.1,0.66,0.18,0.85c0.98,0.66,1.82,1.73,2.42,3.08 c0.62,1.38,0.94,2.98,0.94,4.61c0,1.62-0.32,3.2-0.93,4.58c-0.59,1.35-1.42,2.42-2.39,3.08c-0.27,0.19-0.36,0.56-0.18,0.84 L17.62,21.24z'/>
+                <path fill='currentColor' d='M15.14,17.23c0.1,0.17,0.28,0.27,0.48,0.3c0.2,0.02,0.39-0.05,0.52-0.21C17.32,16,18,14.12,18,12.18 c0-2-0.71-3.9-1.94-5.23c-0.13-0.14-0.31-0.21-0.51-0.2c-0.2,0.02-0.37,0.12-0.48,0.29l-0.34,0.55c-0.15,0.23-0.12,0.53,0.05,0.74 c0.84,0.99,1.31,2.4,1.31,3.85c0,1.41-0.46,2.8-1.26,3.79c-0.16,0.2-0.18,0.49-0.04,0.71L15.14,17.23z'/>
+              </g>
+            </svg>
+          </div>
+          <div class='flex items-center justify-center h-full'>
+            <button class="custom-play focus:outline-none">
+              <div class="audio-icon w-[7dvw] h-[7dvw] flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" class="w-full h-full">
+                  <path fill="#FFFFFF" d="M22.94,12L1.61,24V0L22.94,12z"/>
+                </svg>
+              </div>
+            </button>
+          </div>
+          <div class='flex items-center justify-center h-full'>
+            <span class='custom-time text-[#9F9F9F] text-[2.97dvw] pt-[3dvw] icon'>00:00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`
+  };
+
+const SNOW_STYLE = `
+<style>
+body {
+  background: linear-gradient(to bottom, #25304a 5%, #151b2a 100%) !important;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.snow {
+  pointer-events: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  overflow: hidden;
+}
+
+.snowflake {
+  position: absolute;
+  top: -10px;
+  color: white;
+  font-size: 10dvw;
+  opacity: 0.8;
+  animation: fall linear infinite;
+}
+
+@keyframes fall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0.2;
+  }
+}
+body.dark-snow .flex.flex-col > .flex.items-center.justify-between span {
+  color: #ffffff !important;
+}
+
+body.dark-snow .flex.flex-col > .flex.items-center.justify-between svg circle {
+  fill: #ffffff !important;
+}
+</style>
+`;
+
+const SNOW_SCRIPT = `
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  document.body.classList.add("dark-snow");
+
+  const snowContainer = document.createElement("div");
+  snowContainer.classList.add("snow");
+  document.body.appendChild(snowContainer);
+
+  for (let i = 0; i < 60; i++) {
+    const snowflake = document.createElement("div");
+    snowflake.classList.add("snowflake");
+    snowflake.textContent = "❅";
+
+    snowflake.style.left = Math.random() * 100 + "vw";
+    snowflake.style.animationDuration = 5 + Math.random() * 10 + "s";
+    snowflake.style.fontSize = 0.5 + Math.random() * 2 + "dvw";
+    snowflake.style.opacity = 0.5 + Math.random() * 0.5;
+    snowflake.style.animationDelay = Math.random() * 10 + "s";
+
+    snowContainer.appendChild(snowflake);
+  }
+});
+<\/script>`;
+
+const SNOWMAN_STYLE = `
+<style>
+.icon-overlay-bubble-svg {
+    position: absolute;
+    width: 10dvw;
+    top: -8dvw;
+    right: 10dvw; 
+    pointer-events: none;
+    z-index: 1;
+    transform: rotate(12deg);
+  }
+</style>`;
+
+const SNOWMAN_SCRIPT = `
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const bubbles = document.querySelectorAll(".bubble");
+
+  const overlaySVG =
+"<svg class=\\"icon-overlay-bubble-svg\\" xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"-250 -250 500 500\\" style=\\"opacity:1;\\">" +
+"<g transform=\\"rotate(0,0,0)\\" stroke-linejoin=\\"round\\" fill=\\"#fff\\">" +
+"<path fill=\\"rgb(227,227,227)\\" d=\\"m112.1 23.512l-228.819 110.027c0.0759 0.14579 0.1448 0.29183 0.22152 0.43755c16.5292 31.3941 40.9546 57.3904 80.3942 60.0529c89.9379 6.07154 150.84-16.2423 163.024-76.6075c5.96249-29.5411-3.17791-65.832-14.8213-93.9102z\\"/>" +
+"<path fill=\\"rgb(255,255,255)\\" d=\\"m4.253999-194.9909c-2.02468-0.03041-4.09138 0.01482-6.19888 0.142058c-38.0285 2.29599-62.7876 10.7455-78.0748 31.1506c-12.5956 16.8124-18.7615 43.2982-20.6206 67.5839c-2.35553 30.7694 7.27698 57.0085 27.5807 73.916c-24.7537 14.7724-40.8523 38.9247-50.9694 71.5805c-5.43824 17.5535-9.5924 51.6789 7.31028 84.1574c97.2617 57.2869 235.712 23.9708 228.819-110.027c-0.7117-1.71632-1.43087-3.40962-2.15843-5.06108c-8.9194-20.2461-24.288-35.4239-43.6742-45.0193c20.6814-16.4382 33.3258-40.3684 30.4832-69.5462c-2.01051-20.637-13.7415-39.3594-24.4945-55.6624c-16.4304-24.9108-37.6318-42.7581-68.0021-43.2142z\\"/>" +
+"<path fill=\\"rgb(238,238,238)\\" d=\\"m-51.715-29.664c34.7464 14.5153 59.6124 17.6734 89.2759 7.85762c10.6176-3.51343 13.4963 2.43626 4.55048 10.3898c-8.65385 7.69389-25.1654 15.5202-55.9477 15.3524c-26.2818-0.14327-39.0466-13.6135-45.5576-24.4908c-4.96176-8.289071-4.37204-14.1432 7.67894-9.10894z\\"/>" +
+"<path fill=\\"rgb(68,68,68)\\" d=\\"m-35.796 121.884c-2.96073-2.07904-4.97066-4.65547-5.61221-7.94736c-0.67463-3.46159 0.14865-7.66342 2.33398-10.778c2.19498-3.12832 5.59976-6.30991 9.10055-6.84193c3.29918-0.50139 6.67038 1.493 9.61737 3.56239c3.41209 2.39598 5.27186 7.09288 5.5774 10.949c0.23836 3.00843-0.43065 5.11327-2.29916 7.77631c-2.3763 3.38672-5.35687 6.59163-9.17877 6.92054c-3.03537 0.26123-6.85047-1.75301-9.53916-3.64101z\\"/>" +
+"<path fill=\\"rgb(68,68,68)\\" d=\\"m-19.544001 53.283999c-3.60776 0.26281-6.79347-0.46123-9.37154-2.60524c-2.71096-2.25452-4.72963-6.03015-5.00588-9.82537c-0.27746-3.81197 0.3485-8.43063 2.7239-11.0577c2.23858-2.47576 6.11078-3.06385 9.70178-3.32544c4.15775-0.30288 8.5677 2.15868 11.2422 4.95237c2.08655 2.17954 2.89901 4.23323 3.13521 7.47823c0.30038 4.12685 0.0177 8.49518-2.73478 11.1681c-2.18606 2.12282-6.41465 2.97638-9.6909 3.21505z\\"/>" +
+"<path fill=\\"rgb(68,68,68)\\" d=\\"m-28.587-95.143c-5.50423-0.18714-6.72781 6.41861-2.53587 9.99203c8.21574 7.20671 15.7791 9.98441 24.6575 7.21029c3.08817-0.94155 7.18191-5.06296 6.21935-8.14576c-0.96257-3.08278-5.26305-4.36962-8.337871-3.38532c-5.61281 1.75376-8.99676 0.72095-14.8689-4.43002c-1.01853-0.91891-3.7634-1.19497-5.13415-1.24122z\\"/>" +
+"<path fill=\\"rgb(68,68,68)\\" d=\\"m50.35-116.997001c0 3.56726-0.92 4.74342-2.93997 7.36654c-2.84072 3.68896-7.21818 7.82746-12.2329 7.82746c-2.58516 0-5.24586-1.83055-7.39028-2.94796c-4.97333-2.5915-8.50995-6.24821-8.50994-12.246c0-4.17023 0.79788-6.97201 3.47002-9.76352c2.8282-2.95454 7.65452-5.77919 12.0666-5.77919c1.93316 0 5.33089 1.47876 7.03815 2.12419c5.87069 2.21938 8.4984 6.76844 8.49841 13.4185z\\"/>" +
+"<path fill=\\"rgb(68,68,68)\\" d=\\"m-27.332-125.399c0 3.61874-0.95321 6.74471-3.27793 9.16128c-2.44456 2.54115-6.35534 4.28107-10.1591 4.28107c-3.82054 0-8.379721-0.95999-10.8263-3.52084c-2.30567-2.41336-2.61075-6.31957-2.61075-9.92151c0-4.170411 2.77436-8.39169 5.7538-10.8573c2.32446-1.92359 4.43092-2.58507 7.68323-2.58507c4.136129 0 8.47067 0.59927 10.9355 3.53973c1.95761 2.33531 2.50149 6.6164 2.50149 9.90263z\\"/>" +
+"</g></svg>";
+
+  bubbles.forEach(bubble => {
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = overlaySVG;
+    bubble.appendChild(wrapper.firstElementChild);
+  });
+});
+<\/script>
+`;
+const SANTA_STYLE = `
+<style>
+.icon-wrap {
+  position: relative;
+  display: inline-block;
+  flex-shrink: 0 !important;
+}
+
+.icon-overlay-hat {
+  position: absolute;
+  width: 12dvw; 
+  top: -6.1dvw;
+  left: 87%; 
+  transform: translateX(-50%) rotate(31deg);
+  pointer-events: none;
+  z-index: 1;
+}
+</style>`;
+
+const SANTA_SCRIPT = `
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+  const icons = document.querySelectorAll(
+    'img.rounded-full.object-cover'
+  );
+
+  const hatSVG =
+"<svg xmlns=\\"http://www.w3.org/2000/svg\\" version=\\"1.1\\" viewBox=\\"-250 -250 500 500\\" class=\\"icon-overlay-hat\\">" +
+"<g transform=\\"rotate(0,0,0)\\" stroke-linejoin=\\"round\\" fill=\\"#fff\\">" +
+"<path fill=\\"rgb(255,255,255)\\" d=\\"m187.921-10.926a38.1536 38.2072 0 0 1-38.1536 38.2072a38.1536 38.2072 0 0 1-38.1536-38.2072a38.1536 38.2072 0 0 1 38.1536-38.2072a38.1536 38.2072 0 0 1 38.1536 38.2072z\\"/>" +
+"<path fill=\\"rgb(204,0,0)\\" d=\\"m-149.867001 48.939c-5.78476-83.4517 34.7657-145.007 90.2449-161.244c66.7876-19.5468 173.265 18.3508 199.54 82.1591c0.89684 6.2766-5.50782 12.0705-12.6071 11.4286c0 0-23.8427-12.6188-34.4481-4.89494c10.9639 17.7218 12.6652 40.0885 11.7351 70.7986l-146.406 24.0119z\\"/>" +
+"<path fill=\\"rgb(255,255,255)\\" d=\\"m-135.44 27.639c-18.895-0.26759-26.481 14.9973-26.481 33.9206c0 18.9234 0.513053 34.1882 19.408 33.9206c82.0879-4.84177 162.235-3.85185 241.429 0c18.895 0.2676 16.1436-14.9973 16.1436-33.9206c0-18.9234-7.58604-34.1882-26.481-33.9206c-75.3076-4.44992-150.157-5.68838-224.018 0z\\"/>" +
+"</g></svg>";
+
+  icons.forEach((img) => {
+    const wrap = document.createElement("div");
+    wrap.classList.add("icon-wrap");
+
+    img.parentNode.insertBefore(wrap, img);
+    wrap.appendChild(img);
+
+    wrap.insertAdjacentHTML("beforeend", hatSVG);
+  });
+
+});
+<\/script>
+`;
+const TREE_STYLE = `
+<style>
+  .bubble-flower-svg {
+    position: absolute;
+    width: 10dvw;
+    top: -10dvw;
+    right: 20dvw;
+    pointer-events: none;
+    z-index: 1;
+    transform: rotate(0deg);
+  }
+</style>`;
+
+const TREE_SCRIPT = `
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const bubbles = document.querySelectorAll(".bubble");
+
+  const flowerSVG =
+"<svg class=\\"bubble-flower-svg\\" xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 512 512\\">" +
+"<g>" +
+"<path style=\\"fill:#559E62;\\" d=\\"M472.949,459.932c-47.729-30.92-78.102-60.746-78.102-60.746c22.78,2.169,34.747-26.034,34.747-26.034c-22.242-5.424-60.711-43.39-60.711-43.39c22.233-0.547,52.137-17.356,52.137-17.356c-23.864-3.792-86.65-69.424-86.65-69.424c19.525,2.716,34.981-8.678,34.981-8.678c-19.525-3.792-51.521-43.39-51.521-43.39c24.402,1.085,44.475-8.678,44.475-8.678c-42.34-26.112-77.173-92.637-92.915-126.716C261.163,63.419,256,74.466,256,86.78c0-12.314-5.163-23.361-13.39-31.258c-15.742,34.078-50.575,100.604-92.915,126.716c0,0,20.063,9.763,44.475,8.678c0,0-32.004,39.598-51.53,43.39c0,0,15.464,11.394,34.99,8.678c0,0-62.785,65.631-86.649,69.424c0,0,29.904,16.809,52.137,17.356c0,0-38.469,37.966-60.711,43.39c0,0,11.967,28.203,34.747,26.034c0,0-30.373,29.826-78.102,60.746c0,0,107.928,3.254,156.203-26.034c0,0-46.106,41.758-60.746,43.39c0,0,66.169-0.547,91.119-26.034c0,0,13.017,14.64,30.373,17.356c17.356-2.716,30.373-17.356,30.373-17.356c24.949,25.487,91.119,26.034,91.119,26.034c-14.64-1.631-60.746-43.39-60.746-43.39C365.021,463.186,472.949,459.932,472.949,459.932\\"/>" +
+"<g>" +
+"<path style=\\"fill:#FF0000;\\" d=\\"M275.008,251.661h-11.984c-3.879,0-7.02-3.141-7.02-7.029v-11.976c0-3.888,3.141-7.029,7.02-7.029h11.984c3.879,0,7.029,3.141,7.029,7.029v11.976C282.037,248.52,278.887,251.661,275.008,251.661\\"/>" +
+"<path style=\\"fill:#EEC319;\\" d=\\"M248.974,173.559H236.99c-3.879,0-7.02-3.141-7.02-7.029v-11.976c0-3.888,3.141-7.029,7.02-7.029h11.984c3.879,0,7.029,3.141,7.029,7.029v11.976C256.003,170.418,252.853,173.559,248.974,173.559\\"/>" +
+"<path style=\\"fill:#FF0000;\\" d=\\"M214.262,295.051h-11.984c-3.879,0-7.02-3.141-7.02-7.029v-11.976c0-3.888,3.141-7.029,7.02-7.029h11.984c3.879,0,7.029,3.141,7.029,7.029v11.976C221.292,291.909,218.142,295.051,214.262,295.051\\"/>" +
+"<path style=\\"fill:#EEC319;\\" d=\\"M327.076,312.407h-11.984c-3.879,0-7.02-3.141-7.02-7.029v-11.976c0-3.888,3.141-7.029,7.02-7.029h11.984c3.879,0,7.029,3.141,7.029,7.029v11.976C334.105,309.265,330.955,312.407,327.076,312.407\\"/>" +
+"<path style=\\"fill:#FF0000;\\" d=\\"M327.076,407.864h-11.984c-3.879,0-7.02-3.141-7.02-7.029V388.86c0-3.888,3.141-7.029,7.02-7.029h11.984c3.879,0,7.029,3.141,7.029,7.029v11.976C334.105,404.723,330.955,407.864,327.076,407.864\\"/>" +
+"<path style=\\"fill:#EEC319;\\" d=\\"M257.652,355.797h-11.984c-3.879,0-7.02-3.141-7.02-7.029v-11.976c0-3.888,3.141-7.029,7.02-7.029h11.984c3.879,0,7.029,3.141,7.029,7.029v11.976C264.681,352.655,261.531,355.797,257.652,355.797\\"/>" +
+"<path style=\\"fill:#FF0000;\\" d=\\"M188.229,399.186h-11.984c-3.879,0-7.02-3.141-7.02-7.029v-11.976c0-3.888,3.141-7.029,7.02-7.029h11.984c3.879,0,7.029,3.141,7.029,7.029v11.976C195.258,396.045,192.108,399.186,188.229,399.186\\"/>" +
+"</g>" +
+"<path style=\\"fill:#994530;\\" d=\\"M256,468.61c-6.569-1.024-12.505-3.758-17.356-6.76v82.944h34.712V461.85C268.505,464.853,262.569,467.586,256,468.61\\"/>" +
+"<path style=\\"fill:#EEC319;\\" d=\\"M212.61,43.39C236.596,43.39,256,23.986,256,0c0,23.986,19.404,43.39,43.39,43.39c-23.986,0-43.39,19.404-43.39,43.39C256,62.794,236.596,43.39,212.61,43.39\\"/>" +
+"</g></svg>";
+
+  bubbles.forEach(bubble => {
+    const wrap = document.createElement("div");
+    wrap.innerHTML = flowerSVG;
+    bubble.appendChild(wrap.firstElementChild);
+  });
+});
+<\/script>
+`;
+const TREEW_STYLE = `
+<style>
+  .bubble-flower-svg {
+    position: absolute;
+    width: 10dvw;
+    top: -10dvw;
+    right: 20dvw;
+    pointer-events: none;
+    z-index: 1;
+    transform: rotate(0deg);
+  }
+</style>`;
+
+const TREEW_SCRIPT = `
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const bubbles = document.querySelectorAll(".bubble");
+
+  const flowerSVG =
+"<svg class=\\"bubble-flower-svg\\" xmlns=\\"http://www.w3.org/2000/svg\\" viewBox=\\"0 0 512 512\\">" +
+"<g>" +
+"<path style=\\"fill:#FFFFFF;\\" d=\\"M472.949,459.932c-47.729-30.92-78.102-60.746-78.102-60.746c22.78,2.169,34.747-26.034,34.747-26.034c-22.242-5.424-60.711-43.39-60.711-43.39c22.233-0.547,52.137-17.356,52.137-17.356c-23.864-3.792-86.65-69.424-86.65-69.424c19.525,2.716,34.981-8.678,34.981-8.678c-19.525-3.792-51.521-43.39-51.521-43.39c24.402,1.085,44.475-8.678,44.475-8.678c-42.34-26.112-77.173-92.637-92.915-126.716C261.163,63.419,256,74.466,256,86.78c0-12.314-5.163-23.361-13.39-31.258c-15.742,34.078-50.575,100.604-92.915,126.716c0,0,20.063,9.763,44.475,8.678c0,0-32.004,39.598-51.53,43.39c0,0,15.464,11.394,34.99,8.678c0,0-62.785,65.631-86.649,69.424c0,0,29.904,16.809,52.137,17.356c0,0-38.469,37.966-60.711,43.39c0,0,11.967,28.203,34.747,26.034c0,0-30.373,29.826-78.102,60.746c0,0,107.928,3.254,156.203-26.034c0,0-46.106,41.758-60.746,43.39c0,0,66.169-0.547,91.119-26.034c0,0,13.017,14.64,30.373,17.356c17.356-2.716,30.373-17.356,30.373-17.356c24.949,25.487,91.119,26.034,91.119,26.034c-14.64-1.631-60.746-43.39-60.746-43.39C365.021,463.186,472.949,459.932,472.949,459.932\\"/>" +
+"<g>" +
+"<path style=\\"fill:#96C8FF;\\" d=\\"M275.008,251.661h-11.984c-3.879,0-7.02-3.141-7.02-7.029v-11.976c0-3.888,3.141-7.029,7.02-7.029h11.984c3.879,0,7.029,3.141,7.029,7.029v11.976C282.037,248.52,278.887,251.661,275.008,251.661\\"/>" +
+"<path style=\\"fill:#EEC319;\\" d=\\"M248.974,173.559H236.99c-3.879,0-7.02-3.141-7.02-7.029v-11.976c0-3.888,3.141-7.029,7.02-7.029h11.984c3.879,0,7.029,3.141,7.029,7.029v11.976C256.003,170.418,252.853,173.559,248.974,173.559\\"/>" +
+"<path style=\\"fill:#FF6992;\\" d=\\"M214.262,295.051h-11.984c-3.879,0-7.02-3.141-7.02-7.029v-11.976c0-3.888,3.141-7.029,7.02-7.029h11.984c3.879,0,7.029,3.141,7.029,7.029v11.976C221.292,291.909,218.142,295.051,214.262,295.051\\"/>" +
+"<path style=\\"fill:#FF6992;\\" d=\\"M327.076,312.407h-11.984c-3.879,0-7.02-3.141-7.02-7.029v-11.976c0-3.888,3.141-7.029,7.02-7.029h11.984c3.879,0,7.029,3.141,7.029,7.029v11.976C334.105,309.265,330.955,312.407,327.076,312.407\\"/>" +
+"<path style=\\"fill:#96C8FF;\\" d=\\"M327.076,407.864h-11.984c-3.879,0-7.02-3.141-7.02-7.029V388.86c0-3.888,3.141-7.029,7.02-7.029h11.984c3.879,0,7.029,3.141,7.029,7.029v11.976C334.105,404.723,330.955,407.864,327.076,407.864\\"/>" +
+"<path style=\\"fill:#EEC319;\\" d=\\"M257.652,355.797h-11.984c-3.879,0-7.02-3.141-7.02-7.029v-11.976c0-3.888,3.141-7.029,7.02-7.029h11.984c3.879,0,7.029,3.141,7.029,7.029v11.976C264.681,352.655,261.531,355.797,257.652,355.797\\"/>" +
+"<path style=\\"fill:#96C8FF;\\" d=\\"M188.229,399.186h-11.984c-3.879,0-7.02-3.141-7.02-7.029v-11.976c0-3.888,3.141-7.029,7.02-7.029h11.984c3.879,0,7.029,3.141,7.029,7.029v11.976C195.258,396.045,192.108,399.186,188.229,399.186\\"/>" +
+"</g>" +
+"<path style=\\"fill:#994530;\\" d=\\"M256,468.61c-6.569-1.024-12.505-3.758-17.356-6.76v82.944h34.712V461.85C268.505,464.853,262.569,467.586,256,468.61\\"/>" +
+"<path style=\\"fill:#EEC319;\\" d=\\"M212.61,43.39C236.596,43.39,256,23.986,256,0c0,23.986,19.404,43.39,43.39,43.39c-23.986,0-43.39,19.404-43.39,43.39C256,62.794,236.596,43.39,212.61,43.39\\"/>" +
+"</g></svg>";
+
+  bubbles.forEach(bubble => {
+    const wrap = document.createElement("div");
+    wrap.innerHTML = flowerSVG;
+    bubble.appendChild(wrap.firstElementChild);
+  });
+});
+<\/script>
+`;
+
+	
+
+
+
+
+  let templateHtml = "";
+  let bubbles = [];
+
+  const el = (id) => document.getElementById(id);
+  const templateSelect = el("templateSelect");
+  const bubbleType = el("bubbleType");
+  const roomName = el("roomName");
+  const memberName = el("memberName");
+  const md = el("md");
+  const hm = el("hm");
+  const iconPath = el("iconPath");
+  const chatText = el("chatText");
+  const mediaRow = el("mediaRow");
+  const mediaLabel = el("mediaLabel");
+  const mediaPath = el("mediaPath");
+  const textRow = el("textRow");
+  const list = el("list");
+  const iframe = el("preview");
+
+  function escapeHtml(s){
+    return String(s ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#39;");
+  }
+
+  function setMediaUi(){
+    const t = bubbleType.value;
+    const needsMedia = (t === "2" || t === "3" || t === "4v" || t === "4h" || t === "5");
+    mediaRow.style.display = needsMedia ? "grid" : "none";
+
+    const needsText = (t === "1" || t === "2");
+    textRow.style.display = needsText ? "block" : "none";
+
+    if (t === "2" || t === "3") mediaLabel.textContent = "画像パス（IMAGE_PATH）";
+    if (t === "4v" || t === "4h") mediaLabel.textContent = "動画パス（VIDEO_PATH）";
+    if (t === "5") mediaLabel.textContent = "音声パス（AUDIO_PATH）";
+  }
+
+  bubbleType.addEventListener("change", setMediaUi);
+  setMediaUi();
+
+  async function loadTemplate(){
+    const url = templateSelect.value;
+    const res = await fetch(url, { cache: "no-store" });
+    if (!res.ok) throw new Error(`テンプレ取得失敗: ${url} (${res.status})`);
+    templateHtml = await res.text();
+    if (!templateHtml.includes(MARKER)){
+      throw new Error(`テンプレ内にマーカー ${MARKER} が見つかりません。テンプレに追加してください。`);
+    }
+  }
+
+  function makeBubbleHtml(){
+    const t = bubbleType.value;
+    let html = BUBBLES[t];
+    if (!html) throw new Error("未知の吹き出しタイプです");
+
+    const name = escapeHtml(memberName.value.trim());
+    const mdv  = escapeHtml(md.value.trim());
+    const hmv  = escapeHtml(hm.value.trim());
+    const icon = escapeHtml(iconPath.value.trim());
+    const text = escapeHtml(chatText.value);
+
+    const media = escapeHtml(mediaPath.value.trim());
+
+    if (!name) throw new Error("メンバー名が空です");
+    if (!mdv)  throw new Error("日付（MONTH/DAY）が空です");
+    if (!hmv)  throw new Error("時刻（HOUR:MINUTE）が空です");
+    if (!icon) throw new Error("アイコンパス（ICON_PATH）が空です");
+    if ((t==="1" || t==="2") && !text) throw new Error("本文（CHAT_TEXT）が空です");
+    if ((t==="2" || t==="3") && !media) throw new Error("画像パス（IMAGE_PATH）が空です");
+    if ((t==="4v" || t==="4h") && !media) throw new Error("動画パス（VIDEO_PATH）が空です");
+    if (t==="5" && !media) throw new Error("音声パス（AUDIO_PATH）が空です");
+
+    html = html
+      .replaceAll("MEMBER_NAME", name)
+      .replaceAll("MONTH/DAY", mdv)
+      .replaceAll("HOUR:MINUTE", hmv)
+      .replaceAll("ICON_PATH", icon);
+
+    if (t==="1" || t==="2") html = html.replaceAll("CHAT_TEXT", text);
+
+    if (t==="2" || t==="3") html = html.replaceAll("IMAGE_PATH", media);
+    if (t==="4v" || t==="4h") html = html.replaceAll("VIDEO_PATH", media);
+    if (t==="5") html = html.replaceAll("AUDIO_PATH", media);
+
+    return html.trim() + "\n";
+  }
+
+  function renderList(){
+  list.innerHTML = "";
+
+  if (bubbles.length === 0){
+    const div = document.createElement("div");
+    div.className = "hint";
+    div.textContent = "まだ吹き出しがありません。入力欄から追加してね。";
+    list.appendChild(div);
+    return;
+  }
+
+  bubbles.forEach((b, idx) => {
+
+    const wrap = document.createElement("details");
+    wrap.className = "item";
+    wrap.open = false;
+
+    // --- summary（閉じた状態） ---
+    const summary = document.createElement("summary");
+    summary.innerHTML = `
+      <div style="display:flex; justify-content:space-between; gap:10px;">
+        <div>
+          <span class="chip">#${idx+1}</span>
+          <span class="chip">type:${escapeHtml(b.type)}</span>
+          <span class="chip">${escapeHtml(b.memberName)}</span>
+          <span class="chip">${escapeHtml(b.md)} ${escapeHtml(b.hm)}</span>
+        </div>
+      </div>
+    `;
+
+    const controls = document.createElement("div");
+    controls.style.display = "flex";
+    controls.style.gap = "6px";
+
+    const up = document.createElement("button");
+    up.textContent = "↑";
+    up.disabled = idx === 0;
+    up.onclick = (e) => {
+      e.stopPropagation();
+      [bubbles[idx-1], bubbles[idx]] = [bubbles[idx], bubbles[idx-1]];
+      renderList(); updatePreview();
+    };
+
+    const down = document.createElement("button");
+    down.textContent = "↓";
+    down.disabled = idx === bubbles.length - 1;
+    down.onclick = (e) => {
+      e.stopPropagation();
+      [bubbles[idx+1], bubbles[idx]] = [bubbles[idx], bubbles[idx+1]];
+      renderList(); updatePreview();
+    };
+
+    const del = document.createElement("button");
+    del.textContent = "削除";
+    del.className = "danger";
+    del.onclick = (e) => {
+      e.stopPropagation();
+      bubbles.splice(idx, 1);
+      renderList(); updatePreview();
+    };
+
+    controls.append(up, down, del);
+    summary.firstElementChild.appendChild(controls);
+    wrap.appendChild(summary);
+
+    const editor = document.createElement("div");
+	editor.className = "editor";
+    editor.style.marginTop = "10px";
+
+    editor.innerHTML = `
+      <label>吹き出しタイプ</label>
+      <select onchange="bubbles[${idx}].type=this.value; renderList(); updatePreview();">
+        ${BUBBLE_TYPE_ORDER.map(t =>
+          `<option value="${t}" ${t===b.type?"selected":""}>${t}</option>`
+        ).join("")}
+      </select>
+
+      <label>メンバー名</label>
+      <input value="${escapeHtml(b.memberName)}"
+        oninput="bubbles[${idx}].memberName=this.value; updatePreview();">
+
+      <label>日付</label>
+      <input value="${escapeHtml(b.md)}"
+        oninput="bubbles[${idx}].md=this.value; updatePreview();">
+
+      <label>時刻</label>
+      <input value="${escapeHtml(b.hm)}"
+        oninput="bubbles[${idx}].hm=this.value; updatePreview();">
+
+      <label>アイコンパス</label>
+      <input value="${escapeHtml(b.iconPath)}"
+        oninput="bubbles[${idx}].iconPath=this.value; updatePreview();">
+
+      ${(b.type==="1"||b.type==="2") ? `
+        <label>本文</label>
+        <textarea
+          oninput="bubbles[${idx}].chatText=this.value; updatePreview();"
+        >${escapeHtml(b.chatText)}</textarea>
+      ` : ""}
+
+      ${(["2","3","4v","4h","5"].includes(b.type)) ? `
+        <label>メディアパス</label>
+        <input value="${escapeHtml(b.mediaPath)}"
+          oninput="bubbles[${idx}].mediaPath=this.value; updatePreview();">
+      ` : ""}
+    `;
+
+    wrap.appendChild(editor);
+    list.appendChild(wrap);
+  });
+}
+
+
+  function buildFinalHtml(){
+  const insert = bubbles.map(b => makeBubbleHtmlFromData(b)).join("\n") + "\n";
+
+  let html = templateHtml.replace(MARKER, insert + MARKER);
+	  
+  const name = escapeHtml(memberName.value.trim());
+  if (name) html = html.replaceAll("MEMBER_NAME", name);
+	  
+  const rname = escapeHtml(roomName.value.trim());
+  if (rname) html = html.replaceAll("ROOM_NAME", rname);
+
+  let extra = "";
+
+  if (document.getElementById("optSNOW").checked) {
+    extra += SNOW_STYLE;
+    extra += SNOW_SCRIPT;
+  }
+  if (document.getElementById("optSNOWMAN").checked) {
+    extra += SNOWMAN_STYLE;
+    extra += SNOWMAN_SCRIPT;
+  }
+  if (document.getElementById("optSANTA").checked) {
+    extra += SANTA_STYLE;
+    extra += SANTA_SCRIPT;
+  }
+  if (document.getElementById("optTREE").checked) {
+    extra += TREE_STYLE;
+    extra += TREE_SCRIPT;
+  }
+  if (document.getElementById("optTREEW").checked) {
+    extra += TREEW_STYLE;
+    extra += TREEW_SCRIPT;
+  }
+	  
+  html = html.replace("</body>", extra + "\n</body>");
+
+  return html;
+}
+
+
+
+  function downloadText(filename, text){
+    const blob = new Blob([text], { type: "text/html;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  function updatePreview(){
+    if (!templateHtml) return;
+    const finalHtml = buildFinalHtml();
+    iframe.srcdoc = finalHtml;
+  }
+
+  function makeBubbleHtmlFromData(b) {
+  let html = BUBBLES[b.type];
+  if (!html) throw new Error("未知の吹き出しタイプ");
+
+  html = html
+    .replaceAll("MEMBER_NAME", escapeHtml(b.memberName))
+    .replaceAll("MONTH/DAY", escapeHtml(b.md))
+    .replaceAll("HOUR:MINUTE", escapeHtml(b.hm))
+    .replaceAll("ICON_PATH", escapeHtml(b.iconPath));
+
+  if (b.type === "1" || b.type === "2") {
+    html = html.replaceAll("CHAT_TEXT", escapeHtml(b.chatText));
+  }
+  if (b.type === "2" || b.type === "3") {
+    html = html.replaceAll("IMAGE_PATH", escapeHtml(b.mediaPath));
+  }
+  if (b.type === "4v" || b.type === "4h") {
+    html = html.replaceAll("VIDEO_PATH", escapeHtml(b.mediaPath));
+  }
+  if (b.type === "5") {
+    html = html.replaceAll("AUDIO_PATH", escapeHtml(b.mediaPath));
+  }
+
+  return html.trim() + "\n";
+}
+
+
+  el("addBtn").addEventListener("click", async () => {
+    try{
+      if (!templateHtml) await loadTemplate();
+      bubbles.push({
+  type: bubbleType.value,
+  memberName: memberName.value.trim(),
+  md: md.value.trim(),
+  hm: hm.value.trim(),
+  iconPath: iconPath.value.trim(),
+  chatText: chatText.value,
+  mediaPath: mediaPath.value.trim()
+});
+
+      renderList();
+      updatePreview();
+    }catch(e){
+      alert(e.message || String(e));
+    }
+  });
+
+  el("clearBtn").addEventListener("click", () => {
+    if (!confirm("追加済み吹き出しを全削除します。OK？")) return;
+    bubbles = [];
+    renderList();
+    updatePreview();
+  });
+
+  el("downloadBtn").addEventListener("click", async () => {
+    try{
+      if (!templateHtml) await loadTemplate();
+      const finalHtml = buildFinalHtml();
+      const base = templateSelect.value.split("/").pop().replace(".html","");
+      const filename = `${base}_talk.html`;
+      downloadText(filename, finalHtml);
+    }catch(e){
+      alert(e.message || String(e));
+    }
+  });
+
+  el("previewBtn").addEventListener("click", async () => {
+    try{
+      if (!templateHtml) await loadTemplate();
+      updatePreview();
+    }catch(e){
+      alert(e.message || String(e));
+    }
+  });
+
+  (async () => {
+    try{
+      await loadTemplate();
+      renderList();
+      updatePreview();
+    }catch(e){
+      renderList();
+      alert(e.message || String(e));
+    }
+  })();
+
+  templateSelect.addEventListener("change", async () => {
+    try{
+      await loadTemplate();
+      updatePreview();
+    }catch(e){
+      alert(e.message || String(e));
+    }
+  });
+	
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Enter") return;
+
+  const target = e.target;
+  if (!(target instanceof HTMLElement)) return;
+
+  if (target.tagName === "TEXTAREA") return;
+
+  const focusables = Array.from(
+    document.querySelectorAll(
+      'input:not([type="button"]):not([type="submit"]), select, textarea'
+    )
+  ).filter(el => {
+    return (
+      el.offsetParent !== null &&
+      !el.disabled
+    );
+  });
+
+  const idx = focusables.indexOf(target);
+  if (idx === -1) return;
+
+  e.preventDefault();
+
+  const next = focusables[idx + 1];
+  if (next) next.focus();
+
+});
+
+
+</script>
+</body>
+</html>
