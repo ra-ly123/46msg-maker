@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <title>nogi_talk</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@100..900&display=swap" rel="stylesheet">
   <style>
   .norightclick {
@@ -623,30 +622,26 @@
   });
   </script>
   <script>
-  document.addEventListener("DOMContentLoaded", () => {
-  
-    const urlRegex = /(https?:\/\/[^\s<>]+)|(www\.[^\s<>]+)/g;
-  
-    document.querySelectorAll(".bubble p").forEach(p => {
-      let html = p.innerHTML;
-  
-      html = html.replace(urlRegex, rawUrl => {
-  
-        const trailing = /[)、。.】＞＞」』\]\)]*$/;
-  
-        const urlWithoutTrailing = rawUrl.replace(trailing, "");
-        const removed = rawUrl.slice(urlWithoutTrailing.length);
-  
-        const safeURL = urlWithoutTrailing.startsWith("http")
-                        ? urlWithoutTrailing
-                        : "https://" + urlWithoutTrailing;
-  
-        return `<a href="${safeURL}" class="inline-block underline break-all" style="color:#8F34B4;">${urlWithoutTrailing}${removed}`;
-      });
-  
-      p.innerHTML = html;
-    });
+  document.querySelectorAll(".bubble p").forEach(p => {
+  let html = p.innerHTML;
+
+  const urlRegex = /(https?:\/\/[^\s<]+)|(www\.[^\s<]+)/g;
+
+  html = html.replace(urlRegex, rawUrl => {
+    const trailing = /[)、。.】＞＞」』\]\)\s！!？?]*$/;
+
+    const urlWithoutTrailing = rawUrl.replace(trailing, "");
+    const removed = rawUrl.slice(urlWithoutTrailing.length);
+
+    const safeURL = urlWithoutTrailing.startsWith("http")
+                    ? urlWithoutTrailing
+                    : "https://" + urlWithoutTrailing;
+
+    return `<a href="${safeURL}" class="inline-block underline break-all" style="color:#8F34B4;">${urlWithoutTrailing}</a>${removed}`;
   });
+
+  p.innerHTML = html;
+});
   </script>
 </body>
 
